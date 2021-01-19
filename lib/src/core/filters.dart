@@ -344,14 +344,14 @@ class _FilterEngine {
       final filterSnapshot = List.of(_filters);
 
       for (final filter in filterSnapshot) {
-        final updatedData =
-            await _rpc.call('eth_getFilterChanges', [filter.id]);
-
-        for (final payload in updatedData.result) {
-          if (!filter._controller.isClosed) {
-            _parseAndAdd(filter, payload);
-          }
-        }
+        await _rpc.call('eth_getFilterChanges', [filter.id])
+          .then((updatedData) {
+            for (final payload in updatedData.result) {
+              if (!filter._controller.isClosed) {
+                _parseAndAdd(filter, payload);
+              }
+            }
+          }).catchError(filter._controller.add);
       }
     } finally {
       _isRefreshing = false;
